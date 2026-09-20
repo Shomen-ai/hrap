@@ -1,0 +1,22 @@
+# В репозиторий едут компоненты, их композаблы и файлы-спутники, на которые
+# они ссылаются. Моки и стенд (Vite, Tailwind, vuex-стор, App.vue) — локальные.
+#
+# Схема: игнорируем всё и точечно разрешаем нужные ветки дерева.
+# Каждый уровень приходится разигнорировать отдельно — git не заходит
+# внутрь проигнорированной папки.
+
+/*
+
+!/.gitignore
+!/README.md
+
+!/src/
+/src/*
+!/src/assets/
+!/src/components/
+/src/components/*
+!/src/components/Orders/
+!/src/components/Routes/
+!/src/components/Calendar/
+!/src/components/Composables/
+!/src/components/RouteTab/
