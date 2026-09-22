@@ -1,18 +1,25 @@
 <template>
-  <section class="rounded-xl border border-slate-200 bg-white overflow-hidden">
+  <section
+    ref="root"
+    class="rounded-xl border overflow-hidden transition-colors"
+    :class="isEditing ? 'border-amber-300 bg-amber-50/40' : 'border-slate-200 bg-white'"
+  >
     <!-- ЗАГОЛОВОК-ПЕРЕКЛЮЧАТЕЛЬ -->
     <button
       type="button"
       class="w-full px-4 h-12 flex items-center gap-2 text-left outline-none transition-colors
-             hover:bg-slate-50 focus-visible:bg-slate-50"
+             hover:bg-slate-50 focus-visible:bg-slate-50 disabled:opacity-60"
+      :disabled="disabled"
       :aria-expanded="open"
-      @click="open = !open"
+      @click="toggle"
     >
       <i
-        class="pi text-blue-600 text-sm transition-transform duration-200"
-        :class="open ? 'pi-minus-circle' : 'pi-plus-circle'"
+        class="pi text-sm transition-transform duration-200"
+        :class="isEditing ? 'pi-pencil text-amber-600' : open ? 'pi-minus-circle text-blue-600' : 'pi-plus-circle text-blue-600'"
       />
-      <span class="font-medium text-blue-700">{{ title }}</span>
+      <span class="font-medium" :class="isEditing ? 'text-amber-700' : 'text-blue-700'">
+        {{ title }}
+      </span>
       <i
         class="pi pi-chevron-down ml-auto text-slate-400 text-xs transition-transform duration-200"
         :class="{ 'rotate-180': open }"
@@ -21,105 +28,126 @@
 
     <!-- ФОРМА -->
     <div v-if="open" class="border-t border-slate-100 px-4 py-4 space-y-4">
-      <!-- автозаполнение -->
-      <div class="grid gap-x-4 gap-y-3 grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
-        <div class="min-w-0">
-          <label class="block mb-1 text-xs font-medium text-slate-500">
+      <!-- Автозаполнение -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="w-full min-w-0">
+          <label class="block text-sm font-semibold text-slate-600 mb-1.5">
             Выбрать из избранных маршрутов
           </label>
           <Dropdown
-            v-model="favourite"
-            :options="favouriteRoutes"
-            option-label="name"
+            v-model="selectedFavoriteRoute"
+            :options="favoriteRoutes"
+            option-label="route_name"
             placeholder="Автозаполнение полей"
-            show-clear
             class="w-full"
-            @update:modelValue="applyFavourite"
+            show-clear
+            filter
+            :disabled="disabled"
+            :pt="DROPDOWN_PT"
+            @update:model-value="setRoute"
           />
         </div>
 
-        <div class="min-w-0">
-          <label class="block mb-1 text-xs font-medium text-slate-500">
+        <div class="w-full min-w-0">
+          <label class="block text-sm font-semibold text-slate-600 mb-1.5">
             Выбрать из привязанных точек
           </label>
           <Dropdown
-            v-model="bound"
-            :options="boundPoints"
-            option-label="name"
+            v-model="selectedOtherRoute"
+            :options="otherRoutes"
+            option-label="route_name"
             placeholder="Автозаполнение полей"
-            show-clear
             class="w-full"
-            @update:modelValue="applyBound"
+            show-clear
+            filter
+            :disabled="disabled"
+            :pt="DROPDOWN_PT"
+            @update:model-value="setRoute"
           />
         </div>
       </div>
 
-      <!-- место -->
-      <div class="grid gap-x-4 gap-y-3 grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
-        <div class="min-w-0">
-          <label class="block mb-1 text-xs font-medium text-slate-500">
+      <!-- Сетка полей: каскадные справочники из OrdersModule.logistics -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div class="w-full min-w-0">
+          <label class="block text-sm font-semibold text-slate-600 mb-1.5">
             Корпус <span class="text-red-500">*</span>
           </label>
           <Dropdown
-            v-model="form.building"
-            :options="buildings"
-            option-label="name"
-            placeholder="Выберите корпус"
-            filter
+            v-model="newPoint.building"
+            :options="buildingOptions"
+            placeholder="Корпус"
             class="w-full"
-            :class="{ 'p-invalid': touched && !form.building }"
+            show-clear
+            filter
+            :disabled="disabled"
+            :class="{ 'p-invalid': touched && !newPoint.building }"
+            :pt="DROPDOWN_PT"
           />
         </div>
 
-        <div class="min-w-0">
-          <label class="block mb-1 text-xs font-medium text-slate-500">
+        <div class="w-full min-w-0">
+          <label class="block text-sm font-semibold text-slate-600 mb-1.5">
             Цех / Отдел <span class="text-red-500">*</span>
           </label>
           <Dropdown
-            v-model="form.department"
-            :options="departments"
-            option-label="name"
-            placeholder="Выберите цех"
-            filter
+            v-model="newPoint.department"
+            :options="departmentOptions"
+            placeholder="Цех"
             class="w-full"
-            :class="{ 'p-invalid': touched && !form.department }"
+            show-clear
+            filter
+            :disabled="disabled"
+            :class="{ 'p-invalid': touched && !newPoint.department }"
+            :pt="DROPDOWN_PT"
           />
         </div>
 
-        <div class="min-w-0">
-          <label class="block mb-1 text-xs font-medium text-slate-500">
+        <div class="w-full min-w-0">
+          <label class="block text-sm font-semibold text-slate-600 mb-1.5">
             Координата X <span class="text-red-500">*</span>
           </label>
           <Dropdown
-            v-model="form.x"
-            :options="coordsX"
-            option-label="value"
-            placeholder="Выберите X"
+            v-model="newPoint.x_cord"
+            :options="xOptions"
+            placeholder="X"
             class="w-full"
-            :class="{ 'p-invalid': touched && !form.x }"
+            show-clear
+            filter
+            :disabled="disabled"
+            :class="{ 'p-invalid': touched && !newPoint.x_cord }"
+            :pt="DROPDOWN_PT"
           />
         </div>
 
-        <div class="min-w-0">
-          <label class="block mb-1 text-xs font-medium text-slate-500">
+        <div class="w-full min-w-0">
+          <label class="block text-sm font-semibold text-slate-600 mb-1.5">
             Координата Y <span class="text-red-500">*</span>
           </label>
           <Dropdown
-            v-model="form.y"
-            :options="coordsY"
-            option-label="value"
-            placeholder="Выберите Y"
+            v-model="newPoint.y_cord"
+            :options="yOptions"
+            placeholder="Y"
             class="w-full"
-            :class="{ 'p-invalid': touched && !form.y }"
+            show-clear
+            filter
+            :disabled="disabled"
+            :class="{ 'p-invalid': touched && !newPoint.y_cord }"
+            :pt="DROPDOWN_PT"
           />
         </div>
       </div>
 
-      <!-- когда нужна машина -->
+      <p v-if="!logistics.length" class="text-xs text-amber-600 flex items-center gap-1.5">
+        <i class="pi pi-exclamation-triangle text-[11px]" />
+        Справочник точек (OrdersModule.logistics) пуст — проверь, что он загружается при открытии модалки.
+      </p>
+
+      <!-- Когда нужна машина -->
       <fieldset class="rounded-lg border border-slate-200 bg-slate-50/60 p-3">
         <legend class="px-1 text-xs font-medium text-slate-600 flex items-center gap-1.5">
           <i class="pi pi-flag text-[11px] text-slate-400" />
-          Когда нужна машина? ({{ pointLabel }}) <span class="text-red-500">*</span>
+          Когда нужна машина? <span class="text-red-500">*</span>
         </legend>
 
         <div class="flex flex-wrap gap-2 mb-3">
@@ -133,6 +161,7 @@
                 ? 'bg-blue-600 border-blue-600 text-white'
                 : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300'
             "
+            :disabled="disabled"
             @click="applyPreset(preset.value)"
           >
             {{ preset.label }}
@@ -140,18 +169,19 @@
         </div>
 
         <Calendar
-          v-model="form.date"
+          v-model="newPoint.date"
           selection-mode="range"
           show-time
           hour-format="24"
           date-format="dd.mm.yy"
           :min-date="minDate"
           :max-date="maxDate"
-          :disabled="form.preset !== 'custom'"
+          :disabled="disabled"
           placeholder="дд.мм.гггг 00:00 - дд.мм.гггг 00:00"
           class="w-full"
           :class="{ 'p-invalid': touched && !hasDate }"
-          @update:modelValue="form.preset = 'custom'"
+          :pt="{ panel: { class: 'max-w-[calc(100vw-2rem)]' } }"
+          @update:model-value="form.preset = 'custom'"
         />
 
         <p class="mt-1.5 text-xs text-slate-400 flex items-center gap-1.5">
@@ -160,28 +190,38 @@
         </p>
       </fieldset>
 
-      <!-- комментарий -->
+      <!-- Комментарий -->
       <div>
-        <label class="block mb-1 text-xs font-medium text-slate-500">
+        <label class="block text-sm font-semibold text-slate-600 mb-1.5">
           Комментарий для диспетчера
         </label>
         <Textarea
-          v-model="form.comment"
-          placeholder="Необязательно"
+          v-model="newPoint.comments"
+          :disabled="disabled"
+          placeholder="Местоположение: ..."
           class="w-full min-h-[80px] rounded-lg"
         />
       </div>
 
-      <!-- ошибки и действие -->
+      <!-- Ошибки и действия -->
       <p v-if="touched && errors.length" class="text-xs text-red-600">
         Заполните: {{ errors.join(', ') }}
       </p>
 
-      <div class="flex justify-end">
+      <div class="flex flex-wrap justify-end gap-2">
         <Button
-          icon="pi pi-plus"
-          :label="addLabel"
-          class="h-11 bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg"
+          v-if="isEditing"
+          label="Отмена"
+          text
+          class="h-11 text-slate-500"
+          @click="cancel"
+        />
+        <Button
+          :icon="isEditing ? 'pi pi-check' : 'pi pi-plus'"
+          :label="submitLabel"
+          :disabled="disabled"
+          class="h-11 text-white border-none rounded-lg"
+          :class="isEditing ? 'bg-amber-500 hover:bg-amber-600' : 'bg-blue-600 hover:bg-blue-700'"
           @click="submit"
         />
       </div>
@@ -190,7 +230,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, watch, nextTick } from 'vue'
 import { useStore } from 'vuex'
 import Dropdown from 'primevue/dropdown'
 import Calendar from 'primevue/calendar'
@@ -200,53 +240,130 @@ import Button from 'primevue/button'
 const props = defineProps({
   state_order: { type: [Number, String], default: null },
   all_data_order: { type: Object, default: () => ({}) },
+  disabled: { type: Boolean, default: false },
+  // точка, которую редактируем (null — режим добавления)
+  editPoint: { type: Object, default: null },
+  editIndex: { type: Number, default: null },
 })
 
-const emit = defineEmits(['addPointInRoute'])
+const emit = defineEmits(['addPointInRoute', 'updatePointInRoute', 'cancelEdit'])
 
 const store = useStore()
+const root = ref(null)
 
-const buildings = computed(() => store.state.OrdersModule.buildings ?? [])
-const departments = computed(() => store.state.OrdersModule.departments ?? [])
-const coordsX = computed(() => store.state.OrdersModule.coordsX ?? [])
-const coordsY = computed(() => store.state.OrdersModule.coordsY ?? [])
-const favouriteRoutes = computed(() => store.state.OrdersModule.favouriteRoutes ?? [])
-const boundPoints = computed(() => store.state.OrdersModule.boundPoints ?? [])
+/* ------------------------------------------------------------------ *
+ * Глобальные :pt для Dropdown — те же, что в создании заявки.
+ * panel c max-w не даёт выпадашке вылезти за узкий диалог.
+ * ------------------------------------------------------------------ */
+const DROPDOWN_PT = {
+  root: { class: 'w-full min-w-0' },
+  panel: { class: 'max-w-[calc(100vw-2rem)]' },
+  item: { class: 'whitespace-normal break-words leading-snug py-2' },
+  label: { class: 'truncate' },
+}
+
+/* ------------------------------------------------------------------ *
+ * Состояние формы
+ * ------------------------------------------------------------------ */
 
 const open = ref(false)
 const touched = ref(false)
 
-const favourite = ref(null)
-const bound = ref(null)
+const selectedFavoriteRoute = ref(null)
+const selectedOtherRoute = ref(null)
 
-const form = reactive({
+const newPoint = reactive({
   building: null,
   department: null,
-  x: null,
-  y: null,
-  preset: 'asap',
+  x_cord: null,
+  y_cord: null,
   date: null,
-  comment: '',
+  comments: 'Местоположение: ',
 })
 
-/* ---------- первая точка маршрута — стартовая ---------- */
+const form = reactive({ preset: 'asap' })
 
-const existingPoints = computed(() =>
-  Array.isArray(props.all_data_order?.loading_and_delivery_points)
-    ? props.all_data_order.loading_and_delivery_points
-    : []
+const isEditing = computed(() => props.editIndex !== null && props.editIndex !== undefined)
+
+/* ------------------------------------------------------------------ *
+ * Автозаполнение: избранные маршруты и привязанные точки
+ * ------------------------------------------------------------------ */
+
+const favoriteRoutes = computed(() =>
+  (store.state.AuthModule?.user?.favorite_routes ?? []).filter(
+    (el) => el.type === 'loading' || el.type === 'unloading'
+  )
 )
 
-const isFirst = computed(() => existingPoints.value.length === 0)
-const pointLabel = computed(() => (isFirst.value ? 'Стартовая точка' : 'Точка маршрута'))
-const title = computed(() =>
-  isFirst.value ? 'Добавить стартовую точку маршрута' : 'Добавить точку маршрута'
-)
-const addLabel = computed(() =>
-  isFirst.value ? 'Добавить стартовую точку' : 'Добавить точку маршрута'
+const otherRoutes = computed(() =>
+  (store.state.AuthModule?.routesPriemka ?? []).filter((el) => el.type === 'my')
 )
 
-/* ---------- когда нужна машина ---------- */
+function setRoute(route) {
+  if (!route) return
+
+  newPoint.building = route.building ?? null
+  newPoint.department = route.department ?? null
+  newPoint.x_cord =
+    route.x_cord !== null && route.x_cord !== undefined ? String(route.x_cord) : null
+  newPoint.y_cord =
+    route.y_cord !== null && route.y_cord !== undefined ? String(route.y_cord) : null
+  newPoint.comments = 'Местоположение: ' + (route.route_name || '')
+
+  if (route.type === 'loading' || route.type === 'unloading') {
+    selectedFavoriteRoute.value = route
+    selectedOtherRoute.value = null
+  } else if (route.type === 'my') {
+    selectedOtherRoute.value = route
+    selectedFavoriteRoute.value = null
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Каскадные справочники из OrdersModule.logistics
+ * Каждое поле считает варианты по записям, переживших выбор в остальных.
+ * ------------------------------------------------------------------ */
+
+const KEYS = {
+  building: 'building_name',
+  department: 'department',
+  x_cord: 'point_x',
+  y_cord: 'point_y',
+}
+
+const logistics = computed(() => {
+  const raw = store.state.OrdersModule?.logistics
+  return Array.isArray(raw) ? raw : Object.values(raw ?? {})
+})
+
+const cmp = (a, b) => {
+  const na = Number(a)
+  const nb = Number(b)
+  if (!Number.isNaN(na) && !Number.isNaN(nb)) return na - nb
+  return String(a).localeCompare(String(b), 'ru')
+}
+
+function optionsFor(field) {
+  const rows = logistics.value.filter((row) =>
+    Object.keys(KEYS).every(
+      (f) => f === field || !newPoint[f] || String(row[KEYS[f]]) === String(newPoint[f])
+    )
+  )
+  const values = rows
+    .map((row) => row[KEYS[field]])
+    .filter((v) => v !== null && v !== undefined && v !== '')
+    .map(String)
+  return [...new Set(values)].sort(cmp)
+}
+
+const buildingOptions = computed(() => optionsFor('building'))
+const departmentOptions = computed(() => optionsFor('department'))
+const xOptions = computed(() => optionsFor('x_cord'))
+const yOptions = computed(() => optionsFor('y_cord'))
+
+/* ------------------------------------------------------------------ *
+ * Когда нужна машина
+ * ------------------------------------------------------------------ */
 
 const PRESETS = [
   { value: 'asap', label: 'Как можно скорее' },
@@ -266,87 +383,144 @@ const at = (h, m = 0) => {
 
 function applyPreset(value) {
   form.preset = value
-  if (value === 'asap') form.date = [new Date(), new Date(Date.now() + 2 * 3600e3)]
-  else if (value === 'day') form.date = [new Date(), at(18)]
-  else if (value === 'allday') form.date = [at(8), at(20)]
-  else form.date = null
+  if (value === 'asap') newPoint.date = [new Date(), new Date(Date.now() + 2 * 3600e3)]
+  else if (value === 'day') newPoint.date = [new Date(), at(18)]
+  else if (value === 'allday') newPoint.date = [at(8), at(20)]
+  else newPoint.date = null
 }
 
 applyPreset('asap')
 
-const hasDate = computed(() => Array.isArray(form.date) && Boolean(form.date[0]))
+const hasDate = computed(() => Array.isArray(newPoint.date) && Boolean(newPoint.date[0]))
 
-/* ---------- автозаполнение ---------- */
+/* ------------------------------------------------------------------ *
+ * Заголовок и подписи
+ * ------------------------------------------------------------------ */
 
-const byId = (list, id) => list.find((x) => x.id === id) ?? null
+const existingPoints = computed(() =>
+  Array.isArray(props.all_data_order?.loading_and_delivery_points)
+    ? props.all_data_order.loading_and_delivery_points
+    : []
+)
 
-function fill(point) {
-  form.building = buildings.value.find((b) => b.id === point.building_id) ?? null
-  form.department = byId(departments.value, point.department_id)
-  form.x = coordsX.value.find((c) => c.value === point.x_cord) ?? null
-  form.y = coordsY.value.find((c) => c.value === point.y_cord) ?? null
+const isFirst = computed(() => existingPoints.value.length === 0)
+
+const title = computed(() => {
+  if (isEditing.value) return `Редактирование точки ${props.editIndex + 1}`
+  return isFirst.value ? 'Добавить стартовую точку маршрута' : 'Добавить точку маршрута'
+})
+
+const submitLabel = computed(() => {
+  if (isEditing.value) return 'Сохранить точку'
+  return isFirst.value ? 'Добавить стартовую точку' : 'Добавить точку маршрута'
+})
+
+/* ------------------------------------------------------------------ *
+ * Режим редактирования: форма заполняется данными точки
+ * ------------------------------------------------------------------ */
+
+const toDate = (v) => (v instanceof Date ? v : v ? new Date(v) : null)
+
+function fillFrom(point) {
+  newPoint.building = point?.building != null ? String(point.building) : null
+  newPoint.department = point?.department != null ? String(point.department) : null
+  newPoint.x_cord = point?.x_cord != null ? String(point.x_cord) : null
+  newPoint.y_cord = point?.y_cord != null ? String(point.y_cord) : null
+  newPoint.comments = point?.comments ?? 'Местоположение: '
+
+  const range = Array.isArray(point?.date) ? point.date.map(toDate).filter(Boolean) : []
+  newPoint.date = range.length ? [range[0], range[1] ?? range[0]] : null
+  form.preset = 'custom'
+
+  selectedFavoriteRoute.value = null
+  selectedOtherRoute.value = null
+  touched.value = false
 }
 
-function applyFavourite(route) {
-  if (!route) return
-  bound.value = null
-  // из избранного берём точку по позиции: первая для стартовой, иначе последняя
-  fill(isFirst.value ? route.points[0] : route.points.at(-1))
-}
+watch(
+  () => props.editIndex,
+  async (index) => {
+    if (index === null || index === undefined) return
+    fillFrom(props.editPoint)
+    open.value = true
+    await nextTick()
+    root.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  },
+  { immediate: true }
+)
 
-function applyBound(point) {
-  if (!point) return
-  favourite.value = null
-  fill(point)
-}
-
-/* ---------- отправка ---------- */
+/* ------------------------------------------------------------------ *
+ * Отправка
+ * ------------------------------------------------------------------ */
 
 const errors = computed(() => {
   const list = []
-  if (!form.building) list.push('корпус')
-  if (!form.department) list.push('цех')
-  if (!form.x) list.push('координату X')
-  if (!form.y) list.push('координату Y')
+  if (!newPoint.building) list.push('корпус')
+  if (!newPoint.department) list.push('цех')
+  if (!newPoint.x_cord) list.push('координату X')
+  if (!newPoint.y_cord) list.push('координату Y')
   if (!hasDate.value) list.push('дату')
   return list
 })
 
 function reset() {
-  form.building = null
-  form.department = null
-  form.x = null
-  form.y = null
-  form.comment = ''
-  favourite.value = null
-  bound.value = null
+  newPoint.building = null
+  newPoint.department = null
+  newPoint.x_cord = null
+  newPoint.y_cord = null
+  newPoint.comments = 'Местоположение: '
+  selectedFavoriteRoute.value = null
+  selectedOtherRoute.value = null
   touched.value = false
   applyPreset('asap')
+}
+
+function buildPayload() {
+  const [from, to] = newPoint.date
+  return {
+    // тип точки в UI не показывается, но остаётся в данных:
+    // первая точка маршрута — стартовая, остальные — промежуточные
+    type: isEditing.value
+      ? props.editPoint?.type ?? 'unloading'
+      : isFirst.value
+        ? 'loading'
+        : 'unloading',
+    building: newPoint.building,
+    department: newPoint.department,
+    x_cord: String(newPoint.x_cord),
+    y_cord: String(newPoint.y_cord),
+    date: [from, to ?? from],
+    comments: newPoint.comments,
+    waybill: isEditing.value ? props.editPoint?.waybill ?? null : null,
+    scan_flag: isEditing.value ? props.editPoint?.scan_flag ?? false : false,
+  }
 }
 
 function submit() {
   touched.value = true
   if (errors.value.length) return
 
-  const [from, to] = form.date
-
-  emit('addPointInRoute', {
-    // Поле нужно бэкенду, в интерфейсе больше нигде не показывается:
-    // первая точка маршрута считается начальной, остальные — последующими.
-    type: isFirst.value ? 'loading' : 'unloading',
-    building: form.building.name.replace(/\D+/g, '') || form.building.name,
-    department: form.department.name,
-    // модалка вытаскивает место из comments по префиксу «Местоположение:»
-    comments: `Местоположение:${form.department.name}`,
-    // TODO: проверь имя поля на бэке — комментарий диспетчеру хранится отдельно от места
-    dispatcher_comment: form.comment || null,
-    date: [from, to ?? from],
-    x_cord: form.x.value,
-    y_cord: form.y.value,
-    waybill: null,
-  })
+  if (isEditing.value) {
+    emit('updatePointInRoute', { index: props.editIndex, point: buildPayload() })
+  } else {
+    emit('addPointInRoute', buildPayload())
+  }
 
   reset()
   open.value = false
+}
+
+function cancel() {
+  reset()
+  open.value = false
+  emit('cancelEdit')
+}
+
+function toggle() {
+  if (open.value && isEditing.value) {
+    cancel()
+    return
+  }
+  open.value = !open.value
 }
 </script>

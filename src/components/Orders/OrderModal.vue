@@ -188,8 +188,10 @@
               :disabled="disabled"
               :num_zayvki="rowData && rowData.id ? rowData.id : '...'"
               :all_data_order="rowData"
+              :editing="h.editingIndex.value === index"
               @delete="h.deleteRoute"
               @deletePoint="h.handleDeletePoint"
+              @edit="h.startEditPoint"
             />
           </div>
 
@@ -199,7 +201,12 @@
             <RoutesContentAddOrder
               :state_order="state_order"
               :all_data_order="rowData"
+              :disabled="disabled"
+              :edit-point="h.editingPoint.value"
+              :edit-index="h.editingIndex.value"
               @addPointInRoute="h.handleAddPointInRoute"
+              @updatePointInRoute="h.handleUpdatePointInRoute"
+              @cancelEdit="h.cancelEditPoint"
             />
           </div>
         </slot>

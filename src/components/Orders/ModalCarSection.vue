@@ -176,19 +176,30 @@
           >
             <div
               class="relative group h-full flex flex-col bg-white border-2 rounded-xl overflow-hidden
-                     cursor-pointer transition-all"
+                     transition-all"
               :class="
-                h.isSelectedType(t.id)
-                  ? 'border-blue-500 ring-2 ring-blue-500/20'
-                  : 'border-slate-200 hover:border-blue-300'
+                t.blocked
+                  ? 'border-slate-200 opacity-60 cursor-not-allowed'
+                  : h.isSelectedType(t.id)
+                    ? 'border-blue-500 ring-2 ring-blue-500/20 cursor-pointer'
+                    : 'border-slate-200 hover:border-blue-300 cursor-pointer'
               "
-              @click="h.selectType(t)"
+              @click="t.blocked || h.selectType(t)"
             >
+              <span
+                v-if="t.blocked"
+                class="absolute top-3 left-3 z-10 px-2 py-0.5 rounded-md bg-slate-900/75
+                       text-white text-[11px] font-medium"
+              >
+                Недоступен
+              </span>
+
               <div class="w-full aspect-[4/3] overflow-hidden flex items-center justify-center p-2 bg-sky-100">
                 <img
                   :src="t.firstCar?.car_image || fallbackImage"
                   :alt="t.type"
-                  class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+                  class="w-full h-full object-contain transition-transform duration-300"
+                  :class="t.blocked ? 'grayscale' : 'group-hover:scale-105'"
                   @error="handleImageError"
                 />
               </div>
@@ -203,16 +214,19 @@
 
                 <button
                   type="button"
+                  :disabled="t.blocked"
                   class="w-full py-2.5 rounded-lg font-semibold text-sm transition-colors
-                         flex items-center justify-center gap-2"
+                         flex items-center justify-center gap-2 disabled:cursor-not-allowed"
                   :class="
-                    h.isSelectedType(t.id)
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    t.blocked
+                      ? 'bg-slate-100 text-slate-400'
+                      : h.isSelectedType(t.id)
+                        ? 'bg-blue-50 text-blue-600'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                   "
                 >
-                  <i :class="h.isSelectedType(t.id) ? 'pi pi-check' : 'pi pi-car'" />
-                  {{ h.isSelectedType(t.id) ? 'Выбрано' : 'Выбрать' }}
+                  <i :class="t.blocked ? 'pi pi-lock' : h.isSelectedType(t.id) ? 'pi pi-check' : 'pi pi-car'" />
+                  {{ t.blocked ? 'Недоступен' : h.isSelectedType(t.id) ? 'Выбрано' : 'Выбрать' }}
                 </button>
               </div>
             </div>

@@ -1,5 +1,8 @@
 <template>
-  <article class="rounded-xl border border-slate-200 bg-white px-4 py-3">
+  <article
+    class="rounded-xl border bg-white px-4 py-3 transition-colors"
+    :class="editing ? 'border-amber-300 ring-2 ring-amber-200' : 'border-slate-200'"
+  >
     <div class="flex items-start gap-3">
       <!-- номер и тип -->
       <span
@@ -71,6 +74,8 @@ const props = defineProps({
   route: { type: Object, required: true },
   index: { type: Number, default: 0 },
   disabled: { type: Boolean, default: false },
+  // точка сейчас редактируется в форме ниже
+  editing: { type: Boolean, default: false },
   num_zayvki: { type: [String, Number], default: '' },
   all_data_order: { type: Object, default: () => ({}) },
 })

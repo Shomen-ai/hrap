@@ -133,17 +133,31 @@ export function useCarPicker(props, currentCar) {
       : list.filter((c) => !isCargoCar(c))
   })
 
-  // типы, реально встречающиеся в текущей вкладке
+  // id типа: car_type_id — основное поле, остальные на случай другой формы ответа
+  const carTypeId = (car) =>
+    Number(car?.car_type_id ?? car?.transport_type_id ?? car?.transport_type?.id)
+
+  // Типы строим ПО САМИМ МАШИНАМ, а не по справочнику CarsModule: в модалке он
+  // может быть ещё не загружен (её onMounted грузит только OrdersModule/fetchCars),
+  // и пересечение с ним давало пустой фильтр. Справочник нужен лишь ради названия.
   const availableTypes = computed(() => {
-    const ids = new Set(tabCars.value.map((c) => Number(c.car_type_id)))
-    return allTypes.value.filter((t) => ids.has(Number(t.id)))
+    const dict = new Map(allTypes.value.map((t) => [Number(t.id), t.type]))
+    const found = new Map()
+
+    for (const car of tabCars.value) {
+      const id = carTypeId(car)
+      if (!Number.isFinite(id) || found.has(id)) continue
+      found.set(id, dict.get(id) ?? car?.transport_type?.type ?? `Тип ${id}`)
+    }
+
+    return [...found.entries()]
+      .map(([id, type]) => ({ id, type }))
+      .sort((a, b) => String(a.type).localeCompare(String(b.type), 'ru'))
   })
 
   const filteredCars = computed(() => {
     if (!selectedTypeFilter.value) return tabCars.value
-    return tabCars.value.filter(
-      (c) => Number(c.car_type_id) === Number(selectedTypeFilter.value)
-    )
+    return tabCars.value.filter((c) => carTypeId(c) === Number(selectedTypeFilter.value))
   })
 
   /* ---------- пагинация ---------- *
@@ -185,16 +199,16 @@ export function useCarPicker(props, currentCar) {
   const uniqueElectricTypes = computed(() =>
     availableTypes.value
       .filter((t) => !isCargoType(t))
-      .map((t) => ({
-        ...t,
-        firstCar:
-          tabCars.value.find(
-            (c) => Number(c.car_type_id) === Number(t.id) && c.car_image
-          ) ??
-          tabCars.value.find((c) => Number(c.car_type_id) === Number(t.id)) ??
-          {},
-        count: tabCars.value.filter((c) => Number(c.car_type_id) === Number(t.id)).length,
-      }))
+      .map((t) => {
+        const cars = tabCars.value.filter((c) => carTypeId(c) === Number(t.id))
+        return {
+          ...t,
+          firstCar: cars.find((c) => c.car_image) ?? cars[0] ?? {},
+          count: cars.length,
+          // беспилотный тип целиком либо все машины типа заблокированы
+          blocked: Number(t.id) === BLOCKED_CAR_TYPE_ID || cars.every(isCarBlocked),
+        }
+      })
   )
 
   /* ---------- выбор машины ---------- */
@@ -228,10 +242,10 @@ export function useCarPicker(props, currentCar) {
   // «Выберите любую машину нужного вам типа, диспетчер сам утвердит машину» —
   // выбор типа берёт первую свободную машину этого типа.
   function selectType(type) {
-    if (props.disabled) return
+    if (props.disabled || type?.blocked) return
 
     const pool = tabCars.value.filter(
-      (c) => Number(c.car_type_id) === Number(type.id) && !isCarBlocked(c)
+      (c) => carTypeId(c) === Number(type.id) && !isCarBlocked(c)
     )
     if (!pool.length) return
 
@@ -286,11 +300,13 @@ export function useCarPicker(props, currentCar) {
 
   /* ---------- подстройка под уже выбранную машину ---------- */
 
-  function focusOnCar(car) {
+  // Фильтр по типу при открытии не подставляется — модалка встаёт на «Все типы».
+  // Машина заявки и так первая в items (см. useOrderModal), то есть на первой странице.
+  function focusOnCar(car, { filterByType = false } = {}) {
     if (!car) return
     activeTab.value = lockedTab.value ?? (isCargoCar(car) ? 'cargo' : 'electric')
     if (activeTab.value === 'electric') electricViewMode.value = 'number'
-    selectedTypeFilter.value = car.car_type_id ?? ''
+    selectedTypeFilter.value = filterByType ? car.car_type_id ?? '' : ''
   }
 
   // при открытии модалки встаём на вкладку и тип машины из заявки

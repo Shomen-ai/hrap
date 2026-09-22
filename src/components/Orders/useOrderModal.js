@@ -102,11 +102,18 @@ export function useOrderModal(props, emit) {
     return all.filter((value) => value.state?.state === state.value)
   })
 
-  const items = computed(() =>
-    [...(store.getters['OrdersModule/getCars'] ?? [])].sort((item) =>
-      props.rowData?.car?.id === item.id ? -1 : 1
-    )
-  )
+  // Машина заявки — первой в списке. В исходнике это делал sort() с компаратором
+  // от одного аргумента: он возвращал 1 почти для всех пар и заодно перемешивал
+  // остальные машины при каждом пересчёте. Здесь просто переставляем нужную в начало.
+  const items = computed(() => {
+    const list = [...(store.getters['OrdersModule/getCars'] ?? [])]
+    const id = props.rowData?.car?.id
+    if (!id) return list
+
+    const index = list.findIndex((c) => Number(c.id) === Number(id))
+    if (index > 0) list.unshift(...list.splice(index, 1))
+    return list
+  })
 
   const orders = computed(() => store.getters['AlbertOrdersStore/getOrders'])
 
@@ -255,6 +262,33 @@ export function useOrderModal(props, emit) {
 
   function handleDeletePoint(index) {
     props.rowData.loading_and_delivery_points.splice(index, 1)
+
+    // редактировали удалённую точку — выходим из режима правки;
+    // удалили точку выше — индекс редактируемой сдвинулся
+    if (editingIndex.value === index) editingIndex.value = null
+    else if (editingIndex.value !== null && index < editingIndex.value) editingIndex.value -= 1
+  }
+
+  /* ---------- редактирование точки ---------- */
+
+  const editingIndex = ref(null)
+
+  const editingPoint = computed(() =>
+    editingIndex.value === null ? null : points.value[editingIndex.value] ?? null
+  )
+
+  function startEditPoint(index) {
+    editingIndex.value = index
+  }
+
+  function cancelEditPoint() {
+    editingIndex.value = null
+  }
+
+  function handleUpdatePointInRoute({ index, point }) {
+    if (!Array.isArray(props.rowData?.loading_and_delivery_points)) return
+    props.rowData.loading_and_delivery_points.splice(index, 1, point)
+    editingIndex.value = null
   }
 
   // ВНИМАНИЕ: в исходнике RouteTab имел @delete="deleteRoute",
@@ -365,6 +399,12 @@ export function useOrderModal(props, emit) {
     handleAddPointInRoute,
     handleDeletePoint,
     deleteRoute,
+    // редактирование точки
+    editingIndex,
+    editingPoint,
+    startEditPoint,
+    cancelEditPoint,
+    handleUpdatePointInRoute,
     onSubmit,
     // хелперы
     getStatusLabel,
