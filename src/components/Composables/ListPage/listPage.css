@@ -1,0 +1,76 @@
+/*
+ * Общие стили списочных страниц (Транспорт, Водители, Разнарядка) — как у Orders.
+ * Не scoped: Dialog телепортируется в body, поэтому всё под неймспейсами
+ * .list-page (страница) и .list-modal (модалка).
+ */
+
+.list-page .p-inputtext,
+.list-page .p-dropdown,
+.list-modal .p-inputtext,
+.list-modal .p-dropdown {
+  border: 1px solid rgb(226, 232, 240);
+  color: rgb(15, 23, 42);
+}
+
+.list-page .p-inputtext::placeholder,
+.list-modal .p-inputtext::placeholder {
+  color: rgb(148, 163, 184);
+}
+
+.list-page .p-inputtext:focus,
+.list-page .p-dropdown:not(.p-disabled).p-focus,
+.list-modal .p-inputtext:focus,
+.list-modal .p-dropdown:not(.p-disabled).p-focus {
+  border-color: rgb(37, 99, 235);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  outline: none;
+}
+
+/* пагинатор в общем ритме списка: своя карточка, без рамки PrimeVue */
+.list-page .list-paginator.p-paginator {
+  background: #fff;
+  border: 1px solid rgb(226, 232, 240);
+  border-radius: 0.75rem;
+  padding: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ---------- модалка ---------- */
+
+.list-modal .p-dialog-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgb(226, 232, 240);
+}
+
+.list-modal .p-dialog-content {
+  padding: 0.75rem 1rem 1rem;
+  background: rgb(248, 250, 252);
+}
+
+.list-modal .p-dialog-footer {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid rgb(226, 232, 240);
+  background: #fff;
+}
+
+.list-modal .p-dialog-footer button {
+  margin: 0;
+}
+
+.list-modal .p-inputtext:disabled {
+  background: rgb(241, 245, 249);
+  color: rgb(71, 85, 105);
+}
+
+/* терминалы в цехах: палец, а не мышь */
+@media (pointer: coarse) {
+  .list-page .p-button,
+  .list-page .p-inputtext,
+  .list-page .p-dropdown,
+  .list-page .p-paginator .p-paginator-element,
+  .list-modal .p-button,
+  .list-modal .p-inputtext,
+  .list-modal .p-dropdown {
+    min-height: 2.75rem;
+  }
+}
