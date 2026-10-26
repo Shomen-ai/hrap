@@ -1,0 +1,53 @@
+/*
+ * Стили страницы «Аналитика» поверх listPage.css (поля, фокус, тач).
+ * Не scoped: панели Dropdown и MultiSelect телепортируются в body.
+ */
+
+.list-page .p-dropdown,
+.list-page .p-multiselect {
+  height: 2.5rem;
+  align-items: center;
+  border-radius: 0.5rem;
+}
+
+.list-page .p-dropdown .p-dropdown-label,
+.list-page .p-multiselect .p-multiselect-label {
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: 0.875rem;
+  line-height: 2.5rem;
+}
+
+.list-page .p-multiselect {
+  border: 1px solid rgb(226, 232, 240);
+  color: rgb(15, 23, 42);
+}
+
+.list-page .p-multiselect:not(.p-disabled).p-focus {
+  border-color: rgb(37, 99, 235);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* нативные поля дат «Свой период» — в одном ритме с дропдаунами */
+.list-page .otchet-date {
+  height: 2.5rem;
+  padding: 0 0.75rem;
+  border: 1px solid rgb(226, 232, 240);
+  border-radius: 0.5rem;
+  background: #fff;
+  color: rgb(15, 23, 42);
+  font-size: 0.875rem;
+}
+
+.list-page .otchet-date:focus {
+  border-color: rgb(37, 99, 235);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  outline: none;
+}
+
+@media (pointer: coarse) {
+  .list-page .p-multiselect,
+  .list-page .otchet-date {
+    min-height: 2.75rem;
+  }
+}

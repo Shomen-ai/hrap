@@ -22,3 +22,6 @@
 !/src/components/RouteTab/
 !/src/components/ShablRouter/
 !/src/components/logistic-points-patch/
+
+# заглушка стенда: в проекте своя модалка смены пароля
+/src/components/ShablRouter/PasswordChangeModal.vue
