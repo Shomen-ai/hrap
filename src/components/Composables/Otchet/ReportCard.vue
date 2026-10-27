@@ -6,6 +6,11 @@
         <h2 class="text-base font-semibold text-slate-900">{{ title }}</h2>
         <p v-if="subtitle" class="mt-0.5 text-sm text-slate-500">{{ subtitle }}</p>
       </div>
+      <!-- обновление поверх старых данных: в шапке, чтобы не закрывать подписи графика -->
+      <span v-if="loading && loaded" class="flex items-center gap-2 h-10 text-xs text-slate-500">
+        <i class="pi pi-spin pi-spinner text-xs" />
+        Обновляем…
+      </span>
       <!-- кнопки выгрузки -->
       <div v-if="$slots.actions" class="flex flex-wrap gap-2">
         <slot name="actions" />
@@ -34,18 +39,7 @@
           <p v-if="emptyHint" class="mt-1 text-sm text-slate-400">{{ emptyHint }}</p>
         </div>
 
-        <template v-else>
-          <slot />
-          <!-- обновление поверх старых данных -->
-          <div
-            v-if="loading"
-            class="absolute top-0 right-0 flex items-center gap-2 rounded-lg bg-white/90 px-2 py-1
-                   text-xs text-slate-500 shadow-sm"
-          >
-            <i class="pi pi-spin pi-spinner text-xs" />
-            Обновляем…
-          </div>
-        </template>
+        <slot v-else />
       </div>
 
       <!-- итоги под графиком -->

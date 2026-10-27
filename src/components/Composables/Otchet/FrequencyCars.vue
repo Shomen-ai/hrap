@@ -51,7 +51,7 @@
           </span>
         </div>
         <div class="overflow-x-auto">
-          <div class="h-64" :style="{ minWidth: chartWidth }">
+          <div class="h-80" :style="{ minWidth: chartWidth }">
             <Chart type="bar" :data="orderCountChartData" :options="countOptions" class="h-full" />
           </div>
         </div>
@@ -62,7 +62,7 @@
           <span class="text-sm tabular-nums text-slate-500">всего {{ formatMoney(totalCost) }}</span>
         </div>
         <div class="overflow-x-auto">
-          <div class="h-64" :style="{ minWidth: chartWidth }">
+          <div class="h-80" :style="{ minWidth: chartWidth }">
             <Chart type="bar" :data="totalCostChartData" :options="costOptions" class="h-full" />
           </div>
         </div>

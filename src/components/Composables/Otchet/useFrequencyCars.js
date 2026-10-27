@@ -3,7 +3,7 @@ import { useReport } from './useReport'
 import { barOptions, BAR_STYLE } from './chartOptions'
 import {
   ORDER_TYPES, monthOptions, yearOptions, orderDay, matchType, toNumber,
-  exportSheet, formatCount, formatMoney,
+  COUNT_COLOR, COST_COLOR, exportSheet, formatCount, formatMoney, formatMoneyShort,
 } from './otchet'
 
 export const MODES = [
@@ -11,8 +11,9 @@ export const MODES = [
   { value: 'year', label: 'Год' },
 ]
 
-// ширина столбика на машину: при сотне машин график прокручивается вбок
-const COL = 18
+// ширина столбика на машину: подписан каждый столбик (наклонно), при сотне машин
+// график прокручивается вбок
+const COL = 22
 
 /**
  * Логика графика «Использование машин»: сколько раз и на какую сумму
@@ -75,12 +76,18 @@ export function useFrequencyCars(cars) {
   })
 
   const orderCountChartData = computed(() =>
-    toChart(countRows.value, 'Сколько раз была использована машина', '#2563eb')
+    toChart(countRows.value, 'Сколько раз была использована машина', COUNT_COLOR)
   )
-  const totalCostChartData = computed(() => toChart(costRows.value, 'Какие затраты по машине', '#f59e0b'))
+  const totalCostChartData = computed(() => toChart(costRows.value, 'Какие затраты по машине', COST_COLOR))
 
-  const countOptions = barOptions({ legend: false, format: formatCount })
-  const costOptions = barOptions({ legend: false, format: formatMoney })
+  // без allLabels Chart.js подписывал каждую шестую машину — непонятно, чей столбик
+  const countOptions = barOptions({ legend: false, format: formatCount, allLabels: true })
+  const costOptions = barOptions({
+    legend: false,
+    format: formatMoney,
+    axisFormat: formatMoneyShort,
+    allLabels: true,
+  })
 
   const chartWidth = computed(() => `${Math.max(countRows.value.length * COL, 0)}px`)
 

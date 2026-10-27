@@ -79,7 +79,7 @@
         :max-selected-labels="2"
         :selected-items-label="`Подразделения: {0} из ${podrOptions.length}`"
         placeholder="Подразделения не выбраны"
-        class="w-full sm:w-72"
+        class="w-72 max-w-full"
       />
     </template>
 

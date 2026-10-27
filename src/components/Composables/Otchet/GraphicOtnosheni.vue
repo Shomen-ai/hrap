@@ -36,8 +36,10 @@
       <Dropdown v-model="selectedYear" :options="years" class="w-28" />
     </template>
 
-    <div class="grid gap-6 lg:grid-cols-2">
-      <div>
+    <!-- flex, а не grid: класс .grid занят PrimeFlex (flex-сетка с отрицательными отступами),
+         в рабочем проекте колонки сжимались до ширины содержимого -->
+    <div class="flex flex-col gap-6 lg:flex-row">
+      <div class="flex-1 min-w-0">
         <div class="flex items-baseline justify-between gap-2 mb-2">
           <h3 class="text-sm font-medium text-slate-700">Количество заказов</h3>
           <span class="text-sm tabular-nums text-slate-500">всего {{ formatCount(totalCount) }}</span>
@@ -46,7 +48,7 @@
           <Chart type="bar" :data="orderCountChartData" :options="countOptions" class="h-full" />
         </div>
       </div>
-      <div>
+      <div class="flex-1 min-w-0">
         <div class="flex items-baseline justify-between gap-2 mb-2">
           <h3 class="text-sm font-medium text-slate-700">Затраты</h3>
           <span class="text-sm tabular-nums text-slate-500">всего {{ formatMoney(totalCost) }}</span>
@@ -56,6 +58,18 @@
         </div>
       </div>
     </div>
+
+    <template v-if="hiddenCount" #footer>
+      <button
+        type="button"
+        class="inline-flex items-center gap-2 h-8 px-3 rounded-lg text-sm text-blue-600 hover:bg-blue-50
+               outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
+        @click="showAll = !showAll"
+      >
+        <i class="pi text-xs" :class="showAll ? 'pi-chevron-up' : 'pi-chevron-down'" />
+        {{ showAll ? 'Только крупнейшие' : `Показать все подразделения (ещё ${hiddenCount})` }}
+      </button>
+    </template>
   </ReportCard>
 </template>
 
@@ -81,6 +95,8 @@ const {
   countOptions,
   costOptions,
   chartHeight,
+  showAll,
+  hiddenCount,
   totalCount,
   totalCost,
   isEmpty,

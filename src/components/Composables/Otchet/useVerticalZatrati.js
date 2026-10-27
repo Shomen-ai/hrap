@@ -1,7 +1,9 @@
 import { ref, computed } from 'vue'
 import { useReport } from './useReport'
 import { barOptions, BAR_STYLE } from './chartOptions'
-import { MONTHS, yearOptions, orderDay, toNumber, TYPE_COLORS, exportSheet, formatMoney } from './otchet'
+import {
+  MONTHS, yearOptions, orderDay, toNumber, TYPE_COLORS, exportSheet, formatMoney, formatMoneyShort,
+} from './otchet'
 
 /**
  * Логика графика «Затраты по типу транспорта» за год по месяцам.
@@ -45,7 +47,7 @@ export function useVerticalZatrati() {
     ],
   }))
 
-  const chartOptions = barOptions({ horizontal: true, format: formatMoney })
+  const chartOptions = barOptions({ horizontal: true, format: formatMoney, axisFormat: formatMoneyShort })
 
   const sum = (arr) => arr.reduce((s, v) => s + v, 0)
   const totals = computed(() => ({

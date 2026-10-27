@@ -103,33 +103,42 @@ export const toNumber = (v) => {
 const money = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 })
 const count = new Intl.NumberFormat('ru-RU')
 
+const moneyShort = new Intl.NumberFormat('ru-RU', { notation: 'compact', maximumFractionDigits: 1 })
+
 export const formatMoney = (v) => `${money.format(v)} ₽`
+// для оси: «300 тыс. ₽» вместо «300 000 ₽» — подписи не наезжают друг на друга
+export const formatMoneyShort = (v) => `${moneyShort.format(v)} ₽`
 export const formatCount = (v) => count.format(v)
 
 /* ---------- цвета ---------- */
 
 /**
- * Палитра серий. Цвет закреплён за подписью (подразделение, машина),
- * поэтому при смене фильтра столбики не перекрашиваются, как было
- * со случайными цветами.
+ * Палитра серий из фирменного стиля ОАК: четыре основных цвета и акценты
+ * из графиков в примерах презентаций гайдбука. Цвет выдается по месту
+ * в рейтинге: больше восьми серий на одном графике не различить.
  */
 export const PALETTE = [
-  '#2563eb', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#06b6d4',
-  '#ec4899', '#84cc16', '#f97316', '#14b8a6', '#6366f1', '#eab308',
-  '#64748b', '#a855f7', '#0ea5e9', '#22c55e',
+  '#002664', // темно-синий
+  '#0F4DBC', // синий
+  '#5BC4E0', // голубой
+  '#E8613C', // оранжевый акцент
+  '#5A5A5A', // графит
+  '#87A6DD', // светло-синий
+  '#F2A541', // янтарный
 ]
 
-export function colorFor(label) {
-  let hash = 0
-  for (const ch of String(label)) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0
-  return PALETTE[hash % PALETTE.length]
-}
+// «Остальные» и всё второстепенное
+export const OTHER_COLOR = '#CCCCCC'
+
+// одна величина — один цвет во всех графиках
+export const COUNT_COLOR = '#0F4DBC'
+export const COST_COLOR = '#002664'
 
 // цвета типов транспорта одинаковые во всех графиках
 export const TYPE_COLORS = {
-  Электротранспорт: '#06b6d4',
-  'Грузовой транспорт': '#64748b',
-  Другое: '#cbd5e1',
+  Электротранспорт: '#0F4DBC',
+  'Грузовой транспорт': '#5BC4E0',
+  Другое: OTHER_COLOR,
 }
 
 /* ---------- Excel ---------- */

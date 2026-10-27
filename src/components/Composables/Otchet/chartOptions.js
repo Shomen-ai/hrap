@@ -1,33 +1,45 @@
 /**
- * Опции Chart.js в стиле страниц Orders: светлая сетка, шрифт страницы,
- * подписи slate. Цвета заданы явно — раньше VerticalZatrati читал их из
- * CSS-переменных темы PrimeVue, которых в lara-light-blue нет.
+ * Опции Chart.js в фирменном стиле ОАК: светлая сетка, Arial (наборный
+ * шрифт по гайдбуку), нейтральные серые подписи, подсказка в темно-синем.
+ * Цвета заданы явно — Chart.js рисует на canvas и CSS-переменные не видит.
  */
 
-const TEXT = '#334155' // slate-700
-const MUTED = '#64748b' // slate-500
-const GRID = '#e2e8f0' // slate-200
+const TEXT = '#474747' // slate-700 в фирменной палитре
+const MUTED = '#767676' // slate-500
+const GRID = '#E6E6E6' // slate-200
+const NAVY = '#002664'
 
-const FONT = { family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", size: 12 }
+const FONT = { family: "Arial, 'Helvetica Neue', Helvetica, sans-serif", size: 12 }
 
 /**
  * @param {object} o
  *   horizontal  столбики горизонтально (indexAxis: 'y')
  *   stacked     серии друг на друге
  *   legend      показывать легенду (по умолчанию — если серий больше одной)
- *   format      (number) => string — подпись значения на оси и в подсказке
+ *   format      (number) => string — значение в подсказке
+ *   axisFormat  (number) => string — подпись на оси значений, по умолчанию как format
+ *   allLabels   подписывать каждый столбик (наклонно), а не через один
  */
-export function barOptions({ horizontal = false, stacked = false, legend = true, format = (v) => v } = {}) {
+export function barOptions({
+  horizontal = false,
+  stacked = false,
+  legend = true,
+  format = (v) => v,
+  axisFormat = format,
+  allLabels = false,
+} = {}) {
   const valueAxis = {
     stacked,
     beginAtZero: true,
-    ticks: { color: MUTED, font: FONT, callback: (v) => format(v), precision: 0 },
+    ticks: { color: MUTED, font: FONT, callback: (v) => axisFormat(v), precision: 0 },
     grid: { color: GRID },
     border: { display: false },
   }
   const labelAxis = {
     stacked,
-    ticks: { color: TEXT, font: FONT, autoSkip: true, maxRotation: 0 },
+    ticks: allLabels
+      ? { color: TEXT, font: { ...FONT, size: 11 }, autoSkip: false, minRotation: 45, maxRotation: 60 }
+      : { color: TEXT, font: FONT, autoSkip: true, maxRotation: 0 },
     grid: { display: false },
     border: { color: GRID },
   }
@@ -44,7 +56,7 @@ export function barOptions({ horizontal = false, stacked = false, legend = true,
         labels: { color: TEXT, font: FONT, boxWidth: 10, boxHeight: 10, usePointStyle: true, padding: 14 },
       },
       tooltip: {
-        backgroundColor: '#0f172a',
+        backgroundColor: NAVY,
         titleFont: { ...FONT, weight: '600' },
         bodyFont: FONT,
         padding: 10,
@@ -66,3 +78,6 @@ export function barOptions({ horizontal = false, stacked = false, legend = true,
 
 // столбик со скруглением, как карточки
 export const BAR_STYLE = { borderRadius: 4, maxBarThickness: 36 }
+
+// в стопке скругление дает «зазубрины» на стыках серий — без него
+export const STACKED_STYLE = { borderRadius: 0, maxBarThickness: 36 }

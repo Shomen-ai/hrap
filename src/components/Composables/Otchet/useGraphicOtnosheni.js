@@ -3,11 +3,14 @@ import { useReport } from './useReport'
 import { barOptions, BAR_STYLE } from './chartOptions'
 import {
   ORDER_TYPES, monthOptions, yearOptions, orderDay, matchType, toNumber,
-  colorFor, exportSheet, formatCount, formatMoney,
+  COUNT_COLOR, COST_COLOR, exportSheet, formatCount, formatMoney, formatMoneyShort,
 } from './otchet'
 
-// высота строки горизонтального столбика: подразделений бывает несколько десятков
+// высота строки горизонтального столбика
 const ROW = 26
+
+// подразделений на проде больше семидесяти: по умолчанию — крупнейшие, остальные по кнопке
+const TOP = 15
 
 /**
  * Логика графика «Заказы и затраты по подразделениям» за месяц:
@@ -48,25 +51,30 @@ export function useGraphicOtnosheni() {
   const countRows = computed(() => ranked(byPodr.value.counts))
   const costRows = computed(() => ranked(byPodr.value.costs))
 
-  const toChart = (rows, label) => ({
+  const showAll = ref(false)
+  const hiddenCount = computed(() => Math.max(0, countRows.value.length - TOP))
+  const visible = (rows) => (showAll.value ? rows : rows.slice(0, TOP))
+
+  // цвет у величины, а не у подразделения: подписи и так у каждого столбика
+  const toChart = (rows, label, color) => ({
     labels: rows.map(([name]) => name),
-    datasets: [
-      {
-        label,
-        data: rows.map(([, v]) => v),
-        backgroundColor: rows.map(([name]) => colorFor(name)),
-        ...BAR_STYLE,
-      },
-    ],
+    datasets: [{ label, data: rows.map(([, v]) => v), backgroundColor: color, ...BAR_STYLE }],
   })
 
-  const orderCountChartData = computed(() => toChart(countRows.value, 'Количество заказов'))
-  const totalCostChartData = computed(() => toChart(costRows.value, 'Общая стоимость'))
+  const orderCountChartData = computed(() =>
+    toChart(visible(countRows.value), 'Количество заказов', COUNT_COLOR)
+  )
+  const totalCostChartData = computed(() => toChart(visible(costRows.value), 'Общая стоимость', COST_COLOR))
 
   const countOptions = barOptions({ horizontal: true, legend: false, format: formatCount })
-  const costOptions = barOptions({ horizontal: true, legend: false, format: formatMoney })
+  const costOptions = barOptions({
+    horizontal: true,
+    legend: false,
+    format: formatMoney,
+    axisFormat: formatMoneyShort,
+  })
 
-  const chartHeight = computed(() => `${Math.max(240, countRows.value.length * ROW + 40)}px`)
+  const chartHeight = computed(() => `${Math.max(240, visible(countRows.value).length * ROW + 40)}px`)
 
   const totalCount = computed(() => countRows.value.reduce((s, [, v]) => s + v, 0))
   const totalCost = computed(() => costRows.value.reduce((s, [, v]) => s + v, 0))
@@ -105,6 +113,8 @@ export function useGraphicOtnosheni() {
     countOptions,
     costOptions,
     chartHeight,
+    showAll,
+    hiddenCount,
     totalCount,
     totalCost,
     isEmpty,

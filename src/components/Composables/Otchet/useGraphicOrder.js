@@ -1,9 +1,9 @@
 import { ref, computed, watch } from 'vue'
 import { useReport } from './useReport'
-import { barOptions, BAR_STYLE } from './chartOptions'
+import { barOptions, STACKED_STYLE } from './chartOptions'
 import {
   MONTHS, MONTHS_SHORT, yearOptions, orderDay, orderTypeLabel, dayLabel, dayKey,
-  colorFor, TYPE_COLORS, exportSheet, formatCount, parseDay,
+  PALETTE, OTHER_COLOR, TYPE_COLORS, exportSheet, formatCount, parseDay,
 } from './otchet'
 
 // значения уходят на бэк как есть — те же строки, что были в GraphicOrder
@@ -16,6 +16,10 @@ export const BREAKDOWNS = [
 
 // дольше двух месяцев по дням не читается — собираем по месяцам
 const MAX_DAYS = 62
+
+// по подразделениям: столько крупнейших отдельно, прочие — одной серией «Остальные».
+// Десятки цветных полосок в одном столбике не различить (73 подразделения на проде)
+const TOP_PODR = PALETTE.length
 
 const pad = (n) => String(n).padStart(2, '0')
 
@@ -198,27 +202,63 @@ export function useGraphicOrder() {
 
   const breakdown = ref('type')
 
+  // подразделения по числу заказов за период: первые TOP_PODR — отдельными сериями
+  const podrRank = computed(() => {
+    const counts = new Map()
+    for (const item of filtered.value) counts.set(item.podr, (counts.get(item.podr) || 0) + 1)
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1] || String(a[0]).localeCompare(String(b[0]), 'ru'))
+      .map(([podr]) => podr)
+  })
+
+  // если «Остальные» — одно подразделение, честнее показать его самого
+  const topPodr = computed(() => {
+    const rank = podrRank.value
+    return new Set(rank.length <= TOP_PODR + 1 ? rank : rank.slice(0, TOP_PODR))
+  })
+
+  const othersCount = computed(() => podrRank.value.length - topPodr.value.size)
+
   const chartData = computed(() => {
     const index = new Map(buckets.value.map((b, i) => [b.key, i]))
+    const byType = breakdown.value === 'type'
+    const others = `Остальные (${othersCount.value})`
     const series = new Map()
+
+    const seriesOf = (name, color) => {
+      if (!series.has(name)) {
+        series.set(name, {
+          label: name,
+          data: new Array(buckets.value.length).fill(0),
+          backgroundColor: color,
+          ...STACKED_STYLE,
+        })
+      }
+      return series.get(name)
+    }
+
+    if (!byType) {
+      // порядок серий = рейтинг: крупнейшее подразделение внизу стопки и первым в легенде
+      podrRank.value
+        .filter((p) => topPodr.value.has(p))
+        // восьмое (вместо «Остальных из одного») — цветом «Остальных»
+        .forEach((p, i) => seriesOf(String(p), PALETTE[i] ?? OTHER_COLOR))
+    }
 
     for (const item of filtered.value) {
       const d = orderDay(item)
       if (!d) continue
       const type = orderTypeLabel(item)
-      const name = breakdown.value === 'type' ? type : `${item.podr} (${type})`
-      if (!series.has(name)) {
-        series.set(name, {
-          label: name,
-          data: new Array(buckets.value.length).fill(0),
-          backgroundColor: breakdown.value === 'type' ? TYPE_COLORS[type] : colorFor(name),
-          ...BAR_STYLE,
-        })
-      }
-      series.get(name).data[index.get(bucketOf(d).key)] += 1
+      const s = byType
+        ? seriesOf(type, TYPE_COLORS[type])
+        : topPodr.value.has(item.podr)
+          ? seriesOf(String(item.podr))
+          : seriesOf(others, OTHER_COLOR)
+      s.data[index.get(bucketOf(d).key)] += 1
     }
 
-    const datasets = [...series.values()].sort((a, b) => a.label.localeCompare(b.label, 'ru'))
+    const datasets = [...series.values()]
+    if (byType) datasets.sort((a, b) => a.label.localeCompare(b.label, 'ru'))
     return { labels: buckets.value.map((b) => b.label), datasets }
   })
 
@@ -229,8 +269,8 @@ export function useGraphicOrder() {
       const b = buckets.value[items[0]?.dataIndex]
       return b?.full ?? b?.label ?? ''
     }
-    // десятки подразделений в легенде — шум, цвета видны в подсказке
-    base.plugins.legend.display = chartData.value.datasets.length <= 12
+    // серий не больше TOP_PODR + «Остальные» — легенда помещается
+    base.plugins.legend.display = chartData.value.datasets.length > 1
     return base
   })
 

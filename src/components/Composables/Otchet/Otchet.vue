@@ -13,13 +13,14 @@
           <h1 class="text-xl font-semibold text-slate-900">Аналитика</h1>
 
           <!-- СРЕДНЕЕ ВРЕМЯ -->
-          <div class="grid gap-2 grid-cols-1 sm:grid-cols-2">
+          <!-- flex, а не grid: класс .grid занят PrimeFlex -->
+          <div class="flex flex-col gap-2 sm:flex-row">
             <div
               v-for="tile in tiles"
               :key="tile.label"
-              class="flex items-center gap-3 px-4 h-16 rounded-xl border border-slate-200 bg-white"
+              class="flex-1 min-w-0 flex items-center gap-3 px-4 h-16 rounded-xl border border-slate-200 bg-white"
             >
-              <span class="shrink-0 size-9 rounded-lg grid place-items-center" :class="tile.iconBg">
+              <span class="shrink-0 size-9 rounded-lg flex items-center justify-center" :class="tile.iconBg">
                 <i :class="['pi', tile.icon, tile.iconColor]" />
               </span>
               <span class="min-w-0">
