@@ -1,0 +1,412 @@
+/*
+ * Фирменный стиль ПАО «ОАК» для веб-интерфейсов.
+ * Источник: «Руководство по применению визуального фирменного стиля ПАО «ОАК»
+ * для ПАО «Ил» и филиалов», версия 1.0, май 2023.
+ *
+ * Подключение: import '@/components/Brand/oak-brand.css' (или относительным путем).
+ * Токены объявлены на :root, базовые стили применяются только внутри .oak —
+ * повесьте класс на корневой контейнер страницы, чтобы не задеть остальной интерфейс.
+ *
+ * Значения с пометкой «вне гайдбука» в руководстве не описаны и подобраны
+ * для интерфейса из фирменной палитры.
+ */
+
+@import './oak-fonts.css';
+
+/* MARK: - Токены */
+
+:root {
+  /* 2.03 Основные цвета — «небесная» палитра */
+  --oak-navy: #002664;     /* CMYK 100/85/5/35 · RGB 0/38/100 · PANTONE 281 C · RAL 5013 Cobalt blue */
+  --oak-blue: #0f4dbc;     /* CMYK 90/70/0/0 · RGB 15/77/188 · PANTONE 2728 C · RAL 5010 Gentian blue */
+  --oak-graphite: #5a5a5a; /* CMYK 0/0/0/80 · RGB 90/90/90 · PANTONE Cool Gray 10 C · RAL 7011 */
+  --oak-gray: #969696;     /* CMYK 0/0/0/50 · RGB 150/150/150 · PANTONE Cool Gray 7 C · RAL 7040 */
+  --oak-white: #ffffff;
+
+  /* Светлые оттенки фирменных цветов (смешение с белым) — вне гайдбука */
+  --oak-navy-8: #ebedf3;
+  --oak-navy-16: #d6dce6;
+  --oak-blue-8: #ecf1fa;
+  --oak-blue-16: #d9e3f4;
+  --oak-blue-hover: #0c3f9c;
+
+  /* Светло-серые фоны: цветной логотип допускается на сером до 30% черного (1.07) */
+  --oak-gray-5: #f2f2f2;
+  --oak-gray-10: #e6e6e6;
+  --oak-gray-20: #cccccc;
+  --oak-gray-30: #b3b3b3;
+  /* Темный фон — свыше 60% черного: логотип только в инверсии (1.07) */
+  --oak-black: #121212;
+
+  /* Служебные состояния — вне гайдбука, только для сообщений интерфейса */
+  --oak-danger: #c62828;
+  --oak-danger-bg: #fdecea;
+  --oak-success: #2e7d32;
+  --oak-success-bg: #e8f5e9;
+  --oak-warning: #e8613c; /* акцент из графиков в примерах презентаций (3.05) */
+  --oak-warning-bg: #fdefea;
+  --oak-accent-light: #5bc4e0; /* голубой из графиков в примерах презентаций (3.05) */
+
+  /* Семантика */
+  --oak-text: #1a1a1a;
+  --oak-text-heading: var(--oak-navy);
+  --oak-text-secondary: var(--oak-graphite);
+  --oak-text-muted: var(--oak-gray); /* контраст 2.9:1 — только крупный текст, подписи, disabled */
+  --oak-text-inverse: var(--oak-white);
+  --oak-link: var(--oak-blue);
+  --oak-bg: var(--oak-white);
+  --oak-bg-subtle: var(--oak-gray-5);
+  --oak-border: var(--oak-gray-20);
+  --oak-border-strong: var(--oak-gray);
+  --oak-focus: var(--oak-blue);
+
+  /* 2.01–2.02 Шрифты. Stem — основной (имиджевые материалы, заголовки).
+     Arial — наборный для электронных материалов и деловой документации,
+     а также замена Stem, если он недоступен. Начертания: Regular и Bold. */
+  --oak-font-display: 'Stem', Arial, 'Helvetica Neue', Helvetica, sans-serif;
+  --oak-font-text: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+  --oak-weight-regular: 400;
+  --oak-weight-bold: 700;
+
+  /* Кегли. Пропорции интерлиньяжа взяты из деловой документации:
+     визитки 1.2 (9/10.8, 7/8.4, 6/7.2), грамоты ≈1.33 (9/12, 30/40) */
+  --oak-fs-xs: 12px;
+  --oak-fs-sm: 14px;
+  --oak-fs-base: 16px;
+  --oak-fs-lg: 20px;
+  --oak-fs-xl: 24px;
+  --oak-fs-2xl: 32px;
+  --oak-fs-3xl: 40px;
+  --oak-lh-tight: 1.2;
+  --oak-lh-normal: 1.33;
+  --oak-lh-relaxed: 1.5;
+
+  /* Отступы и форма — вне гайдбука. Скругления малые: в знаке скруглены только углы монокрыла */
+  --oak-space-1: 4px;
+  --oak-space-2: 8px;
+  --oak-space-3: 12px;
+  --oak-space-4: 16px;
+  --oak-space-5: 24px;
+  --oak-space-6: 32px;
+  --oak-space-7: 48px;
+  --oak-radius-sm: 2px;
+  --oak-radius: 4px;
+  --oak-radius-lg: 8px;
+  --oak-shadow: 0 1px 2px rgb(0 38 100 / 0.08), 0 2px 8px rgb(0 38 100 / 0.06);
+
+  /* 2.04 Фирменная графика: ритмичные разнонаправленные линии.
+     Без эффекта Radial Blur ритм передается толщиной линий */
+  --oak-graphic-light: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 600' preserveAspectRatio='xMidYMid slice'%3E%3Cg fill='none' stroke='%23FFFFFF' stroke-opacity='0.35'%3E%3Cpath d='M-40 640C380 470 760 250 1240 120' stroke-width='1'/%3E%3Cpath d='M-40 606C380 422 760 230 1240 150' stroke-width='1.5'/%3E%3Cpath d='M-40 572C380 374 760 210 1240 180' stroke-width='2'/%3E%3Cpath d='M-40 538C380 326 760 190 1240 210' stroke-width='3'/%3E%3Cpath d='M-40 504C380 278 760 170 1240 240' stroke-width='4'/%3E%3Cpath d='M-40 470C380 230 760 150 1240 270' stroke-width='5'/%3E%3Cpath d='M-40 436C380 182 760 130 1240 300' stroke-width='7'/%3E%3Cpath d='M-40 402C380 134 760 110 1240 330' stroke-width='9'/%3E%3C/g%3E%3C/svg%3E");
+  --oak-graphic-dark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 600' preserveAspectRatio='xMidYMid slice'%3E%3Cg fill='none' stroke='%230F4DBC' stroke-opacity='0.35'%3E%3Cpath d='M-40 640C380 470 760 250 1240 120' stroke-width='1'/%3E%3Cpath d='M-40 606C380 422 760 230 1240 150' stroke-width='1.5'/%3E%3Cpath d='M-40 572C380 374 760 210 1240 180' stroke-width='2'/%3E%3Cpath d='M-40 538C380 326 760 190 1240 210' stroke-width='3'/%3E%3Cpath d='M-40 504C380 278 760 170 1240 240' stroke-width='4'/%3E%3Cpath d='M-40 470C380 230 760 150 1240 270' stroke-width='5'/%3E%3Cpath d='M-40 436C380 182 760 130 1240 300' stroke-width='7'/%3E%3Cpath d='M-40 402C380 134 760 110 1240 330' stroke-width='9'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* MARK: - База */
+
+.oak {
+  font-family: var(--oak-font-text);
+  font-size: var(--oak-fs-base);
+  line-height: var(--oak-lh-relaxed);
+  color: var(--oak-text);
+  background: var(--oak-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+.oak :focus-visible {
+  outline: 2px solid var(--oak-focus);
+  outline-offset: 2px;
+}
+
+.oak a,
+.oak-link {
+  color: var(--oak-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.oak a:hover,
+.oak-link:hover {
+  color: var(--oak-navy);
+}
+
+/* MARK: - Типографика */
+
+/* Заголовки в гайдбуке — Stem Regular, фирменный темно-синий */
+.oak h1,
+.oak-h1 {
+  font-family: var(--oak-font-display);
+  font-size: var(--oak-fs-3xl);
+  font-weight: var(--oak-weight-regular);
+  line-height: var(--oak-lh-tight);
+  color: var(--oak-text-heading);
+  margin: 0 0 var(--oak-space-5);
+}
+
+.oak h2,
+.oak-h2 {
+  font-family: var(--oak-font-display);
+  font-size: var(--oak-fs-2xl);
+  font-weight: var(--oak-weight-regular);
+  line-height: var(--oak-lh-tight);
+  color: var(--oak-text-heading);
+  margin: 0 0 var(--oak-space-4);
+}
+
+.oak h3,
+.oak-h3 {
+  font-family: var(--oak-font-display);
+  font-size: var(--oak-fs-xl);
+  font-weight: var(--oak-weight-regular);
+  line-height: var(--oak-lh-tight);
+  color: var(--oak-text-heading);
+  margin: 0 0 var(--oak-space-3);
+}
+
+.oak h4,
+.oak-h4 {
+  font-family: var(--oak-font-display);
+  font-size: var(--oak-fs-lg);
+  font-weight: var(--oak-weight-bold);
+  line-height: var(--oak-lh-tight);
+  color: var(--oak-text-heading);
+  margin: 0 0 var(--oak-space-2);
+}
+
+/* Надзаголовок раздела («Знак и логотип» над «1.01 Знак») */
+.oak-eyebrow {
+  font-size: var(--oak-fs-sm);
+  line-height: var(--oak-lh-normal);
+  color: var(--oak-text-secondary);
+}
+
+/* Прописной Bold: фамилии, названия презентаций, номинации грамот */
+.oak-caps {
+  font-family: var(--oak-font-display);
+  font-weight: var(--oak-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.oak-text-sm { font-size: var(--oak-fs-sm); line-height: var(--oak-lh-normal); }
+.oak-text-xs { font-size: var(--oak-fs-xs); line-height: var(--oak-lh-normal); }
+.oak-text-secondary { color: var(--oak-text-secondary); }
+.oak-text-muted { color: var(--oak-text-muted); }
+.oak-text-navy { color: var(--oak-navy); }
+.oak-text-blue { color: var(--oak-blue); }
+.oak-text-white { color: var(--oak-white); }
+.oak-bold { font-weight: var(--oak-weight-bold); }
+.oak-tabular { font-variant-numeric: tabular-nums; }
+
+/* MARK: - Поверхности */
+
+/* 1.07 Фоны: предпочтительно фирменные цвета. На темном — инверсный логотип */
+.oak-surface-navy { background-color: var(--oak-navy); color: var(--oak-text-inverse); }
+.oak-surface-blue { background-color: var(--oak-blue); color: var(--oak-text-inverse); }
+.oak-surface-graphite { background-color: var(--oak-graphite); color: var(--oak-text-inverse); }
+.oak-surface-gray { background-color: var(--oak-gray); color: var(--oak-text-inverse); }
+.oak-surface-black { background-color: var(--oak-black); color: var(--oak-text-inverse); }
+.oak-surface-light { background-color: var(--oak-gray-5); color: var(--oak-text); }
+.oak-surface-white { background-color: var(--oak-white); color: var(--oak-text); }
+
+.oak-surface-navy :is(h1, h2, h3, h4),
+.oak-surface-blue :is(h1, h2, h3, h4),
+.oak-surface-graphite :is(h1, h2, h3, h4),
+.oak-surface-gray :is(h1, h2, h3, h4),
+.oak-surface-black :is(h1, h2, h3, h4) {
+  color: inherit;
+}
+
+/* 2.05 Градиенты в переходах допустимы */
+.oak-surface-gradient {
+  background-image: linear-gradient(135deg, var(--oak-navy) 0%, var(--oak-blue) 100%);
+  color: var(--oak-text-inverse);
+}
+
+/* 2.04–2.05 Фирменная графика: любые сочетания четырех цветов + белый.
+   Комбинируйте с .oak-surface-*: светлые линии — на темном фоне, синие — на светлом */
+.oak-graphic,
+.oak-graphic-dark {
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+
+.oak-graphic { background-image: var(--oak-graphic-light); }
+.oak-graphic-dark { background-image: var(--oak-graphic-dark); }
+
+.oak-surface-gradient.oak-graphic {
+  background-image: var(--oak-graphic-light), linear-gradient(135deg, var(--oak-navy) 0%, var(--oak-blue) 100%);
+}
+
+/* MARK: - Компоненты */
+
+.oak-card {
+  background: var(--oak-white);
+  border: 1px solid var(--oak-border);
+  border-radius: var(--oak-radius-lg);
+  padding: var(--oak-space-5);
+}
+
+.oak-card--raised {
+  border-color: transparent;
+  box-shadow: var(--oak-shadow);
+}
+
+/* Горизонтальная линейка, как в грамотах и дипломах (3.07) */
+.oak-rule {
+  border: 0;
+  border-top: 2px solid var(--oak-navy);
+  margin: var(--oak-space-5) 0;
+}
+
+.oak-divider {
+  border: 0;
+  border-top: 1px solid var(--oak-border);
+  margin: var(--oak-space-4) 0;
+}
+
+.oak-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--oak-space-2);
+  height: 40px;
+  padding: 0 var(--oak-space-5);
+  border: 1px solid transparent;
+  border-radius: var(--oak-radius);
+  font-family: var(--oak-font-text);
+  font-size: var(--oak-fs-sm);
+  font-weight: var(--oak-weight-bold);
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.oak-btn:disabled,
+.oak-btn[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.oak-btn--primary { background: var(--oak-blue); color: var(--oak-white); }
+.oak-btn--primary:hover:not(:disabled) { background: var(--oak-blue-hover); }
+
+.oak-btn--navy { background: var(--oak-navy); color: var(--oak-white); }
+.oak-btn--navy:hover:not(:disabled) { background: var(--oak-blue); }
+
+.oak-btn--outline { background: transparent; color: var(--oak-navy); border-color: var(--oak-navy); }
+.oak-btn--outline:hover:not(:disabled) { background: var(--oak-navy-8); }
+
+.oak-btn--ghost { background: transparent; color: var(--oak-blue); }
+.oak-btn--ghost:hover:not(:disabled) { background: var(--oak-blue-8); }
+
+.oak-btn--danger { background: var(--oak-danger); color: var(--oak-white); }
+
+/* На темных поверхностях */
+.oak-btn--inverse { background: var(--oak-white); color: var(--oak-navy); }
+.oak-btn--inverse:hover:not(:disabled) { background: var(--oak-blue-8); }
+
+.oak-btn--sm { height: 32px; padding: 0 var(--oak-space-3); font-size: var(--oak-fs-xs); }
+.oak-btn--lg { height: 48px; padding: 0 var(--oak-space-6); font-size: var(--oak-fs-base); }
+
+.oak-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--oak-space-1);
+}
+
+.oak-label {
+  font-size: var(--oak-fs-sm);
+  color: var(--oak-text-secondary);
+}
+
+.oak-input,
+.oak-select,
+.oak-textarea {
+  width: 100%;
+  min-height: 40px;
+  padding: var(--oak-space-2) var(--oak-space-3);
+  border: 1px solid var(--oak-border);
+  border-radius: var(--oak-radius);
+  background: var(--oak-white);
+  font-family: var(--oak-font-text);
+  font-size: var(--oak-fs-sm);
+  color: var(--oak-text);
+  box-sizing: border-box;
+}
+
+.oak-input:hover,
+.oak-select:hover,
+.oak-textarea:hover {
+  border-color: var(--oak-border-strong);
+}
+
+.oak-input:focus,
+.oak-select:focus,
+.oak-textarea:focus {
+  outline: none;
+  border-color: var(--oak-blue);
+  box-shadow: 0 0 0 3px var(--oak-blue-16);
+}
+
+.oak-input[aria-invalid='true'] {
+  border-color: var(--oak-danger);
+}
+
+.oak-input:disabled {
+  background: var(--oak-gray-5);
+  color: var(--oak-text-muted);
+}
+
+.oak-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--oak-space-2);
+  border-radius: var(--oak-radius-sm);
+  font-size: var(--oak-fs-xs);
+  font-weight: var(--oak-weight-bold);
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.oak-badge--navy { background: var(--oak-navy-8); color: var(--oak-navy); }
+.oak-badge--blue { background: var(--oak-blue-8); color: var(--oak-blue); }
+.oak-badge--gray { background: var(--oak-gray-10); color: var(--oak-graphite); }
+.oak-badge--success { background: var(--oak-success-bg); color: var(--oak-success); }
+.oak-badge--warning { background: var(--oak-warning-bg); color: #b13f1d; }
+.oak-badge--danger { background: var(--oak-danger-bg); color: var(--oak-danger); }
+
+.oak-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--oak-fs-sm);
+}
+
+.oak-table th {
+  padding: var(--oak-space-2) var(--oak-space-3);
+  background: var(--oak-navy-8);
+  color: var(--oak-navy);
+  font-weight: var(--oak-weight-bold);
+  text-align: left;
+  border-bottom: 2px solid var(--oak-navy);
+}
+
+.oak-table td {
+  padding: var(--oak-space-2) var(--oak-space-3);
+  border-bottom: 1px solid var(--oak-gray-10);
+}
+
+.oak-table tbody tr:hover {
+  background: var(--oak-blue-8);
+}
+
+/* MARK: - Логотип */
+
+/* 1.02, 1.04 Охранное поле: вокруг знака — x/2, вокруг логотипа — x (x — диаметр знака).
+   Компонент OakLogo умеет добавлять поле сам (prop safe-area). Здесь — отступ по высоте
+   логотипа: диаметр знака ≈ 0.63 высоты логотипа ОАК (вместе со знаком) */
+.oak-logo-safe {
+  --oak-logo-h: 40px;
+  padding: calc(var(--oak-logo-h) * 0.63);
+}

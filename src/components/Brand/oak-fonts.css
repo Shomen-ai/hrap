@@ -1,0 +1,76 @@
+/*
+ * Фирменные шрифты (гайдбук, 2.01–2.02): Stem и Arial, начертания Regular и Bold.
+ * Подключается из oak-brand.css.
+ *
+ * Сначала local(): если шрифт установлен в системе (Arial — почти всегда),
+ * браузер возьмет его и файлы не скачает. woff2 — для современных браузеров, woff — запасной.
+ *
+ * Папка fonts/ не хранится в git (шрифты лицензионные, репозиторий публичный).
+ * Положите в нее Stem-Regular/Bold и ArialMT, Arial-BoldMT, Arial-ItalicMT,
+ * Arial-BoldItalicMT в woff2 и woff. Без файлов сборка проходит с предупреждением,
+ * а браузер берет шрифты из системы или Arial.
+ */
+
+/* MARK: - Stem */
+
+@font-face {
+  font-family: 'Stem';
+  src: local('Stem Regular'), local('Stem-Regular'),
+    url('./fonts/Stem-Regular.woff2') format('woff2'),
+    url('./fonts/Stem-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Stem';
+  src: local('Stem Bold'), local('Stem-Bold'),
+    url('./fonts/Stem-Bold.woff2') format('woff2'),
+    url('./fonts/Stem-Bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* MARK: - Arial */
+
+@font-face {
+  font-family: 'Arial';
+  src: local('Arial'), local('ArialMT'),
+    url('./fonts/ArialMT.woff2') format('woff2'),
+    url('./fonts/ArialMT.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Arial';
+  src: local('Arial Bold'), local('Arial-BoldMT'),
+    url('./fonts/Arial-BoldMT.woff2') format('woff2'),
+    url('./fonts/Arial-BoldMT.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Arial';
+  src: local('Arial Italic'), local('Arial-ItalicMT'),
+    url('./fonts/Arial-ItalicMT.woff2') format('woff2'),
+    url('./fonts/Arial-ItalicMT.woff') format('woff');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Arial';
+  src: local('Arial Bold Italic'), local('Arial-BoldItalicMT'),
+    url('./fonts/Arial-BoldItalicMT.woff2') format('woff2'),
+    url('./fonts/Arial-BoldItalicMT.woff') format('woff');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
