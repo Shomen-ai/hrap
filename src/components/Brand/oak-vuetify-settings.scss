@@ -1,0 +1,29 @@
+// Sass-настройки Vuetify 3 под фирменный стиль ОАК — НЕОБЯЗАТЕЛЬНО.
+// Без этого файла все работает через oak-vuetify.js + oak-vuetify.css;
+// с ним Vuetify собирается сразу с Arial и малыми скруглениями, и в CSS
+// не нужны !important для шрифтов.
+//
+// Подключение (vite.config.js):
+//   import vuetify from 'vite-plugin-vuetify'
+//   plugins: [vue(), vuetify({ styles: { configFile: 'src/components/Brand/oak-vuetify-settings.scss' } })]
+// И в plugins/vuetify.js импортировать 'vuetify/styles' как обычно.
+
+@use 'vuetify/settings' with (
+  $body-font-family: ('Arial', 'Helvetica Neue', 'Helvetica', sans-serif),
+  $heading-font-family: ('Stem', 'Arial', 'Helvetica Neue', 'Helvetica', sans-serif),
+
+  // скругления: sm 2px, по умолчанию 4px, lg 8px — как --oak-radius-* в oak-brand.css
+  $rounded: (
+    0: 0,
+    'sm': 2px,
+    null: 4px,
+    'lg': 8px,
+    'xl': 12px,
+    'pill': 9999px,
+    'circle': 50%,
+  ),
+
+  $button-text-transform: none,
+  $button-text-letter-spacing: normal,
+  $button-font-weight: 700,
+);

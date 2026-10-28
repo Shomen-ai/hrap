@@ -1,0 +1,86 @@
+/*
+ * Дополнения к теме Vuetify 3 под фирменный стиль ОАК (пара к oak-vuetify.js).
+ * Подключать ПОСЛЕ 'vuetify/styles'.
+ *
+ * Шрифты, типографика и то, что тема Vuetify через JS не задает:
+ * Roboto → Arial/Stem, заглавные буквы в кнопках, разрядка.
+ */
+
+@import './oak-fonts.css';
+
+/* MARK: - Шрифты (2.01–2.02) */
+
+/* Arial — наборный шрифт для электронных материалов, Stem — заголовки */
+.v-application,
+.v-overlay-container,
+.v-theme--oakLight,
+.v-theme--oakDark {
+  font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+}
+
+/* Vuetify задает Roboto у каждого text-* класса — перебиваем */
+.v-application [class*='text-body'],
+.v-application [class*='text-subtitle'],
+.v-application .text-button,
+.v-application .text-caption,
+.v-application .text-overline {
+  font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif !important;
+  letter-spacing: normal !important;
+}
+
+/* Заголовки в гайдбуке — Stem Regular, фирменный темно-синий */
+.v-application [class*='text-h'] {
+  font-family: 'Stem', Arial, 'Helvetica Neue', Helvetica, sans-serif !important;
+  font-weight: 400 !important;
+  letter-spacing: normal !important;
+  line-height: 1.2 !important;
+}
+
+.v-theme--oakLight [class*='text-h'] {
+  color: #002664;
+}
+
+/* MARK: - Кнопки */
+
+/* Material пишет кнопки капслоком с разрядкой — в стиле ОАК обычный регистр */
+.v-btn {
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 700;
+}
+
+/* MARK: - Поля */
+
+/* серая рамка в покое, фирменный синий — только при фокусе */
+.v-theme--oakLight .v-field--variant-outlined .v-field__outline {
+  color: #cccccc;
+  opacity: 1;
+}
+
+.v-theme--oakLight .v-field--variant-outlined.v-field--focused .v-field__outline {
+  color: #0f4dbc;
+}
+
+.v-theme--oakLight .v-field--error .v-field__outline {
+  color: #c62828;
+}
+
+/* MARK: - Карточки и таблицы */
+
+.v-theme--oakLight .v-card--variant-elevated,
+.v-theme--oakLight .v-card--variant-flat {
+  box-shadow: 0 1px 2px rgb(0 38 100 / 0.08), 0 2px 8px rgb(0 38 100 / 0.06);
+}
+
+.v-theme--oakLight .v-table > .v-table__wrapper > table > thead > tr > th {
+  color: #5a5a5a;
+  font-weight: 700;
+  background: #f2f2f2;
+}
+
+/* MARK: - Фокус */
+
+.v-theme--oakLight :focus-visible {
+  outline: 2px solid #0f4dbc;
+  outline-offset: 2px;
+}
