@@ -197,6 +197,15 @@
 
           <p v-else class="text-sm text-slate-400">Точки не указаны</p>
 
+          <p
+            v-if="h.showRouteError.value"
+            class="mt-3 flex items-center gap-2 text-sm text-red-600"
+            role="alert"
+          >
+            <i class="pi pi-exclamation-triangle text-xs" />
+            {{ h.routeError.value }}
+          </p>
+
           <div v-if="state_order == 1 || state_order == 2" class="mt-4">
             <RoutesContentAddOrder
               :state_order="state_order"

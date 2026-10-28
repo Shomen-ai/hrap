@@ -138,6 +138,41 @@ export function useOrderModal(props, emit) {
     return `${n} ${pointsWord(n)}`
   })
 
+  /* ---------- проверка маршрута ---------- *
+   * Те же правила, что при создании заявки (SectionRoute → routeErrorMessage).
+   * vee-validate про точки не знает — они не поля формы, — поэтому проверка
+   * своя и подмешивается в validate() ниже.
+   */
+
+  const MIN_POINTS = 2
+  const MAX_POINTS = 10
+
+  const routeError = computed(() => {
+    const list = points.value
+    if (list.length < MIN_POINTS) return `Маршрут должен содержать минимум ${MIN_POINTS} точки`
+    if (list.length > MAX_POINTS) return `Максимальное количество точек маршрута — ${MAX_POINTS}`
+    if (!list.some((p) => p.type === 'loading')) return 'Должна быть стартовая точка (погрузка)'
+    if (!list.some((p) => p.type === 'unloading')) return 'Должна быть минимум 1 точка выгрузки'
+    return ''
+  })
+
+  // ошибку показываем после первой попытки отправить, а не сразу при открытии
+  const routeTouched = ref(false)
+  const showRouteError = computed(() => routeTouched.value && Boolean(routeError.value))
+
+  async function validateAll() {
+    routeTouched.value = true
+    const result = await validate()
+    return { ...result, valid: result.valid && !routeError.value }
+  }
+
+  watch(
+    () => props.visible,
+    (open) => {
+      if (open) routeTouched.value = false
+    }
+  )
+
   const transportHint = computed(() => {
     const type = props.rowData?.car?.transport_type?.type
     const garaj = props.rowData?.car?.garaj_number
@@ -352,8 +387,10 @@ export function useOrderModal(props, emit) {
   })
 
   return {
-    // валидация
-    validate,
+    // валидация: поля формы + маршрут
+    validate: validateAll,
+    routeError,
+    showRouteError,
     errors,
     resetForm,
     // состояние
