@@ -1,7 +1,8 @@
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import axios from 'axios'
 import { useListPage } from '@/components/Composables/ListPage/useListPage'
+import { transportOptions, matchTransport } from '@/components/Composables/ListPage/transportFilter'
 
 /**
  * Логика страницы «Разнарядка»: загрузка назначений и водителей,
@@ -113,8 +114,15 @@ export function useAssignments() {
       { id: 'without', label: 'Без водителя', count: items.filter((a) => !hasDriver(a)).length, icon: 'pi-exclamation-circle', iconBg: 'bg-red-100', iconColor: 'text-red-600' },
     ],
     matchTile: (a, id) => (id === 'with' ? hasDriver(a) : !hasDriver(a)),
+    filters: {
+      type: (a, value) => matchTransport(a.taxi_car?.transport_type?.type, value),
+    },
     rows: 30,
   })
+
+  const transportTypes = computed(() =>
+    transportOptions(h.items.value, (a) => a.taxi_car?.transport_type?.type)
+  )
 
   /* ---------- правка назначения ----------
    * Раньше это был row-edit DataTable. Теперь у каждой карточки свой черновик:
@@ -200,6 +208,7 @@ export function useAssignments() {
     h,
     loading,
     drivers,
+    transportTypes,
     work_modes,
     drafts,
     savingId,

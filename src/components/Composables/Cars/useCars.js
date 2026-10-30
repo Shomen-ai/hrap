@@ -3,6 +3,7 @@ import { useStore } from 'vuex'
 import { useToast } from 'primevue/usetoast'
 import { useListPage } from '@/components/Composables/ListPage/useListPage'
 import { stateTiles, matchState } from '@/components/Composables/ListPage/stateStyle'
+import { transportOptions, matchTransport } from '@/components/Composables/ListPage/transportFilter'
 
 /**
  * Логика страницы «Транспорт»: загрузка, список с поиском и плитками, удаление.
@@ -50,16 +51,12 @@ export function useCars() {
     matchTile: matchState,
     columns,
     filters: {
-      type: (car, type) => car.transport_type?.type === type,
+      type: (car, value) => matchTransport(car.transport_type?.type, value),
     },
   })
 
   // типы транспорта из самих машин — в списке только те, что есть
-  const transportTypes = computed(() =>
-    [...new Set(h.items.value.map((c) => c.transport_type?.type).filter(Boolean))].sort((a, b) =>
-      a.localeCompare(b, 'ru')
-    )
-  )
+  const transportTypes = computed(() => transportOptions(h.items.value, (c) => c.transport_type?.type))
 
   const deleteCar = (id) => {
     store

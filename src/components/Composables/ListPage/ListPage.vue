@@ -24,9 +24,6 @@
           </button>
         </div>
 
-        <!-- доп. фильтры страницы (дропдауны) -->
-        <slot name="filters" />
-
         <Button
           v-if="h.hasActiveFilters.value"
           icon="pi pi-filter-slash"
@@ -47,10 +44,15 @@
       </div>
     </div>
 
-    <!-- ПЛИТКИ -->
+    <!-- ПЛИТКИ + доп. фильтры страницы (слот #filters) в одной строке -->
+    <div
+      v-if="h.tiles.value.length > 1 || $slots.filters"
+      class="flex flex-col gap-2 lg:flex-row lg:items-stretch"
+    >
+    <!-- !grid: класс .grid занят PrimeFlex и ломает колонки -->
     <div
       v-if="h.tiles.value.length > 1"
-      class="grid gap-2 grid-cols-[repeat(auto-fit,minmax(150px,1fr))]"
+      class="flex-1 min-w-0 !grid gap-2 grid-cols-[repeat(auto-fit,minmax(150px,1fr))]"
     >
       <button
         v-for="tile in h.tiles.value"
@@ -73,6 +75,11 @@
           </span>
         </span>
       </button>
+    </div>
+
+    <div v-if="$slots.filters" class="flex flex-col gap-2 sm:flex-row lg:flex-col lg:w-60 lg:shrink-0">
+      <slot name="filters" />
+    </div>
     </div>
 
     <!-- ЗАГРУЗКА -->

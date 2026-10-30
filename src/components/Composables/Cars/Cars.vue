@@ -17,11 +17,11 @@
             <Dropdown
               v-model="h.filters.type"
               :options="transportTypes"
-              placeholder="Все типы"
+              option-label="label"
+              option-value="value"
+              placeholder="Все типы транспорта"
               show-clear
-              filter
-              empty-filter-message="Не найдено"
-              class="h-10 w-full sm:w-56 rounded-lg"
+              class="w-full h-14 rounded-xl items-center"
             />
           </template>
 

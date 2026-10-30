@@ -12,6 +12,18 @@
           empty-title="Назначений нет"
           empty-hint="Здесь появятся машины для разнарядки"
         >
+          <template #filters>
+            <Dropdown
+              v-model="h.filters.type"
+              :options="transportTypes"
+              option-label="label"
+              option-value="value"
+              placeholder="Все типы транспорта"
+              show-clear
+              class="w-full h-14 rounded-xl items-center"
+            />
+          </template>
+
           <template #default="{ items }">
             <AssignmentCard
               v-for="row in items"
@@ -34,6 +46,7 @@
 </template>
 
 <script setup>
+import Dropdown from 'primevue/dropdown'
 import HeaderDispatcher from '@/components/HeaderDispatcher.vue'
 import ListPage from '@/components/Composables/ListPage/ListPage.vue'
 import AssignmentCard from './AssignmentCard.vue'
@@ -43,6 +56,7 @@ const {
   h,
   loading,
   drivers,
+  transportTypes,
   work_modes,
   drafts,
   savingId,
