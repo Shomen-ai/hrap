@@ -13,6 +13,18 @@
           empty-title="Транспорта нет"
           empty-hint="Добавьте первую машину кнопкой «Добавить транспорт»"
         >
+          <template #filters>
+            <Dropdown
+              v-model="h.filters.type"
+              :options="transportTypes"
+              placeholder="Все типы"
+              show-clear
+              filter
+              empty-filter-message="Не найдено"
+              class="h-10 w-full sm:w-56 rounded-lg"
+            />
+          </template>
+
           <template #actions>
             <Button
               icon="pi pi-plus"
@@ -44,6 +56,7 @@
 <script setup>
 import { ref } from 'vue'
 import Button from 'primevue/button'
+import Dropdown from 'primevue/dropdown'
 
 import HeaderDispatcher from '@/components/HeaderDispatcher.vue'
 import ListPage from '@/components/Composables/ListPage/ListPage.vue'
@@ -53,5 +66,5 @@ import { useCars } from './useCars'
 
 const carModal = ref(null)
 
-const { h, loading, deleteCar } = useCars()
+const { h, loading, deleteCar, transportTypes } = useCars()
 </script>

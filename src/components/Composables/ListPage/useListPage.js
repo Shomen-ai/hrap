@@ -1,4 +1,4 @@
-import { ref, computed, watch } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import * as XLSX from 'xlsx-js-style'
 
 export const getByPath = (obj, path) => path.split('.').reduce((acc, k) => acc?.[k], obj)
@@ -17,6 +17,8 @@ export const asArray = (v) => (Array.isArray(v) ? v : Object.values(v ?? {}))
  *   tiles         (items) => [{ id, label, count, icon, iconBg, iconColor }]; id: null — «все»
  *   matchTile     (item, tileId) => boolean
  *   columns       [{ field, header }] — колонки для экспорта в Excel
+ *   filters       { key: (item, value) => boolean } — доп. фильтры страницы (дропдауны в слоте #filters);
+ *                 значение лежит в h.filters[key], null — фильтр выключен
  *   rows          размер страницы по умолчанию
  */
 export function useListPage(source, opts = {}) {
@@ -26,6 +28,7 @@ export function useListPage(source, opts = {}) {
     tiles = () => [],
     matchTile = () => true,
     columns = [],
+    filters: filterFns = {},
     rows: defaultRows = 15,
   } = opts
 
@@ -34,6 +37,9 @@ export function useListPage(source, opts = {}) {
   const search = ref('')
   const activeTile = ref(null)
   const openIds = ref(new Set())
+  const filters = reactive(Object.fromEntries(Object.keys(filterFns).map((k) => [k, null])))
+
+  const activeFilters = () => Object.entries(filters).filter(([, v]) => v !== null && v !== '')
 
   const items = computed(() => asArray(source.value))
 
@@ -50,13 +56,19 @@ export function useListPage(source, opts = {}) {
   // пробелы по краям и двойные пробелы не мешают поиску
   const query = computed(() => search.value.trim().replace(/\s+/g, ' ').toLowerCase())
 
-  const hasActiveFilters = computed(() => Boolean(query.value) || activeTile.value !== null)
+  const hasActiveFilters = computed(
+    () => Boolean(query.value) || activeTile.value !== null || activeFilters().length > 0
+  )
 
   const filtered = computed(() => {
     let result = items.value
 
     if (activeTile.value !== null) {
       result = result.filter((item) => matchTile(item, activeTile.value))
+    }
+
+    for (const [key, value] of activeFilters()) {
+      result = result.filter((item) => filterFns[key](item, value))
     }
 
     const q = query.value
@@ -88,13 +100,14 @@ export function useListPage(source, opts = {}) {
   }
 
   // на первую страницу — только когда меняется фильтр, а не данные
-  watch([search, activeTile], () => {
+  watch([search, activeTile, () => ({ ...filters })], () => {
     first.value = 0
   })
 
   function clearFilter() {
     search.value = ''
     activeTile.value = null
+    for (const key of Object.keys(filters)) filters[key] = null
   }
 
   /* ---------- раскрытие ---------- */
@@ -135,6 +148,7 @@ export function useListPage(source, opts = {}) {
     // состояние
     search,
     activeTile,
+    filters,
     // списки
     items,
     tiles: tileList,

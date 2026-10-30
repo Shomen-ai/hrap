@@ -49,7 +49,17 @@ export function useCars() {
     tiles: (items) => stateTiles(items, 'Весь транспорт'),
     matchTile: matchState,
     columns,
+    filters: {
+      type: (car, type) => car.transport_type?.type === type,
+    },
   })
+
+  // типы транспорта из самих машин — в списке только те, что есть
+  const transportTypes = computed(() =>
+    [...new Set(h.items.value.map((c) => c.transport_type?.type).filter(Boolean))].sort((a, b) =>
+      a.localeCompare(b, 'ru')
+    )
+  )
 
   const deleteCar = (id) => {
     store
@@ -81,5 +91,5 @@ export function useCars() {
       })
   }
 
-  return { h, loading, deleteCar }
+  return { h, loading, deleteCar, transportTypes }
 }

@@ -24,6 +24,9 @@
           </button>
         </div>
 
+        <!-- доп. фильтры страницы (дропдауны) -->
+        <slot name="filters" />
+
         <Button
           v-if="h.hasActiveFilters.value"
           icon="pi pi-filter-slash"
